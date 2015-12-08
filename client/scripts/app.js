@@ -1,4 +1,6 @@
 // YOUR CODE HERE:
+
+// https://www.parse.com/docs/rest/guide/#queries
 // var message = {
 //   username: 'Liza',
 //   text: 'jello',
@@ -18,6 +20,10 @@ $(document).ready(function(){
     e.preventDefault();
     app.clearMessages()
   })
+  $("#joinRoom").on("click", function(e){
+    e.preventDefault();
+    joinOrCreateRoom();
+  })
 })
 
 
@@ -25,7 +31,7 @@ var app = {
   server: 'https://api.parse.com/1/classes/chatterbox'
 };
 
-var currentRoom = 'main';
+var currentRoom = 'lobby';
 var allRooms = {};
 function escapeRegExp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
@@ -67,7 +73,7 @@ app.fetch = function(){
       contentType: 'application/json',
       success: function (data) {
         console.log('chatterbox: data retrieved', data.results);
-
+        $("#rooms").html("");
        for(var i = 0; i < data.results.length; i++) {
         if (!(allRooms[data.results[i].roomname] in allRooms)){
           if (data.results[i].roomname !== undefined && data.results[i].roomname !== null){
@@ -82,7 +88,9 @@ app.fetch = function(){
             }
           
        }
-       console.log(allRooms);
+       for (var key in allRooms) {
+        $('#rooms').append('<li> | ' + key + ' | </li>')
+       }
       },
       error: function (data) {
         // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -91,6 +99,12 @@ app.fetch = function(){
     });
 
 };
+
+var joinOrCreateRoom = function(){
+  var room = prompt('Join or create a room!');
+
+  currentRoom = room;
+}
 
 app.clearMessages = function() {
   $('#chats').html('');
