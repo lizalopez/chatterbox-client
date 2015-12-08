@@ -4,6 +4,7 @@
 //   text: 'jello',
 //   roomname: '4chan'
 // };
+var user = prompt("What is your Name?")
 $(document).ready(function(){
   $('#send').on('click', function(e) {
     e.preventDefault();
@@ -20,18 +21,22 @@ $(document).ready(function(){
 })
 
 
-var app = {};
+var app = {
+  server: 'https://api.parse.com/1/classes/chatterbox'
+};
 
+var currentRoom = 'main';
+var allRooms = {};
 function escapeRegExp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
-
+//
 app.init= function(){
 
 }
 
 app.handleSubmit = function(){
-    var message = { username: "Liza", text : $("#submitText").val() , roomname: "4chan"}
+    var message = { username: user, text : $("#message").val() , roomname: "4chan"}
     console.log(message);
     app.send(message)
 }
@@ -64,12 +69,20 @@ app.fetch = function(){
         console.log('chatterbox: data retrieved', data.results);
 
        for(var i = 0; i < data.results.length; i++) {
-            if(typeof data.results[i].text === "string"){
-              var message = { username: data.results[i].username, text: data.results[i].text}
+        if (!(allRooms[data.results[i].roomname] in allRooms)){
+          if (data.results[i].roomname !== undefined && data.results[i].roomname !== null){
+            allRooms[data.results[i].roomname] = data.results[i].roomname;
+          }   
+        }
+            if(typeof data.results[i].text === "string" && typeof data.results[i].username === "string" && data.results[i].roomname === currentRoom){
+              var sanitizedUsername = data.results[i].username.replace(/[\\\.\+\*\?\^\$\[\]\(\)\{\}\/\'\#\:\!\=\|]/ig, "\\$&")
+              var sanitizedText = data.results[i].text.replace(/[\\\.\+\*\?\^\$\[\]\(\)\{\}\/\'\#\:\!\=\|]/ig, "\\$&");
+              var message = { username: sanitizedUsername, text: sanitizedText}
               app.addMessage(message);
             }
           
        }
+       console.log(allRooms);
       },
       error: function (data) {
         // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -95,7 +108,7 @@ app.addRoom = function(roomname) {
 app.addFriend = function(){
  // console.log("here");
 }
-
+// setInterval(app.fetch, 1000); 
 
 
 
